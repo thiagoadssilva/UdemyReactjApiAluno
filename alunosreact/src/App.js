@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {Modal, ModalBody, ModalFooter, ModalHeader, Table } from 'react-bootstrap';
-import logoCadastro from './assets/01.png';
+//import logoCadastro from './assets/01.png';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
@@ -11,7 +11,8 @@ function APP(){
   const baseUrl = "https://localhost:7155/api/alunos";
 
   const [data, setData] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalIncluir, setmodalIncluir] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
   const [alunoSelecionado, setAlunoSelecionado] = useState({
     id: '',
     nome: '',
@@ -19,20 +20,21 @@ function APP(){
     idade: ''
   })
 
-  console.log(modalOpen)
+  const abrirFecharModalIncluir = () =>{
+    setmodalIncluir(!modalIncluir);
+  }
 
-  const abrirModal = () =>{
-    setModalOpen(!modalOpen);
-    
+  const abrirFecharModalEditar =() =>{
+    setModalEditar(!modalEditar)
+    pedidoGet();
   }
 
   const handleChange = e =>{
     const {name, value} = e.target;
-
     setAlunoSelecionado({...alunoSelecionado, [name]: value});
-    console.log(alunoSelecionado)
   }
 
+  /* INICIO - Funções de comunicação com API */
   const pedidoGet = async() =>{
     await axios.get(baseUrl)
       .then(response =>{
@@ -49,22 +51,50 @@ function APP(){
     await axios.post(baseUrl, alunoSelecionado)
       .then(response =>{
         setData(data.concat(response.data))
-        abrirModal();
+        abrirFecharModalIncluir();
       }).catch(error =>{
         console.log(error)
       })
   }
 
+  const pedidoPut = async () =>{
+    alunoSelecionado.idade = parseInt(alunoSelecionado.idade)
+    await axios.put(baseUrl+"/"+alunoSelecionado.id, alunoSelecionado)
+      .then(response =>{
+        var resposta = response.data
+        var dadosAuxiliares = data
+        dadosAuxiliares.map(aluno =>{
+          if(aluno.id === alunoSelecionado.id){
+            aluno.nome = resposta.nome
+            aluno.email = resposta.email
+            aluno.idade = resposta.idade
+          }
+        })
+        abrirFecharModalEditar();
+      }).catch(error =>{
+        console.log(error);
+      })
+      
+  }
+  /* FIM - Funções de comunicação com API */
+
+  const selecionarAluno = (aluno, opcao) =>{
+    setAlunoSelecionado(aluno)
+    if(opcao === 'Editar'){
+      abrirFecharModalEditar();
+    }
+  }
+
   useEffect(() =>{
     pedidoGet();
-  })
+  }, [])
 
   return(
     <div className='App'>
       <h3>Cadastro de Alunos</h3>
       
       <header className='logoBotao'>
-        <button className='btn btn-success' onClick={abrirModal}>Incluir Novo Aluno</button>
+        <button className='btn btn-success' onClick={abrirFecharModalIncluir}>Incluir Novo Aluno</button>
       </header>
 
       <Table striped bordered hover>
@@ -86,8 +116,8 @@ function APP(){
               <td>{aluno.email}</td>
               <td>{aluno.idade}</td>
               <td>
-                <button className='btn btn-primary'>Editar</button>{' '}
-                <button className='btn btn-danger'>Excluir</button>
+                <button className='btn btn-primary' onClick={ () => selecionarAluno(aluno, 'Editar')}>Editar</button>{' '}
+                <button className='btn btn-danger' onClick={ () => selecionarAluno(aluno, 'Excluir')}>Excluir</button>
               </td>
             </tr>
           ))}
@@ -95,7 +125,7 @@ function APP(){
         </tbody>
       </Table>
 
-      <Modal show={modalOpen}>
+      <Modal show={modalIncluir}>
         <ModalHeader>Incluir Aluno</ModalHeader>
         <ModalBody>
           <div className='form-group'>
@@ -114,8 +144,36 @@ function APP(){
           </div>
         </ModalBody>
         <ModalFooter>
-          <button className='btn btn-primary' onClick={pedidoPost}>Incluir</button>{'  '}
-          <button className='btn btn-danger' onClick={abrirModal}>Cancelar</button>{'  '}
+          <button className='btn btn-primary' onClick={() => pedidoPost()}>Incluir</button>{'  '}
+          <button className='btn btn-danger' onClick={() => abrirFecharModalIncluir()}>Cancelar</button>{'  '}
+        </ModalFooter>
+      </Modal>
+
+
+      <Modal show={modalEditar}>
+        <ModalHeader>Editar Aluno</ModalHeader>
+        <ModalBody>
+          <div className='form-group'>
+            <label>Id:</label>
+            <input type="text" className='form-control' readOnly value={alunoSelecionado && alunoSelecionado.id}/>
+            <br />
+            <label>Nome:</label>
+            <br />
+            <input type="text" className='form-control' name="nome" value={alunoSelecionado && alunoSelecionado.nome} onChange={handleChange}/>
+            <br />
+            <label>E-mail:</label>
+            <br />
+            <input type="text" className='form-control' name="email" value={alunoSelecionado && alunoSelecionado.email} onChange={handleChange}/>
+            <br />
+            <label>Idade:</label>
+            <br />
+            <input type="text" className='form-control' name="idade" value={alunoSelecionado && alunoSelecionado.idade} onChange={handleChange}/>
+            <br />
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <button className='btn btn-primary' onClick={() => pedidoPut()}>Editar</button>{'  '}
+          <button className='btn btn-danger' onClick={() => abrirFecharModalEditar()}>Cancelar</button>{'  '}
         </ModalFooter>
       </Modal>
     
