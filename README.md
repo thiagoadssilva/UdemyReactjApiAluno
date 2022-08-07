@@ -18,8 +18,26 @@ https://github.com/thiagoadssilva/UdemyReactjApiAluno/blob/main/alunosreact/READ
 
 <hr>
 
-## Imagem do projeto
+## Listando os Alunos
 
 ![Tela Principal](images/01.PNG)
+
+<hr>
+
+## Cadastrando os Alunos
+
+![Tela Principal](images/02.PNG)
+
+<hr>
+
+## Atualizando os Alunos
+
+![Tela Principal](images/03.PNG)
+
+<hr>
+
+## Excluindo os Alunos
+
+![Tela Principal](images/04.PNG)
 
 <hr>
